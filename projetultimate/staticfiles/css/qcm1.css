@@ -1,0 +1,40 @@
+@CHARSET "UTF-8";
+
+img {
+    max-width: 100%;
+    height: auto;
+    }
+
+button.marge {
+	margin: 2px;
+}
+
+.pie{
+    width: 20px;
+    height: 20px;
+    display: block;
+    position: relative;
+    border-radius: 50%;
+    background-color: red;
+    border: 2px solid red;
+    float: left;
+    margin: 0em;
+  .block{
+    position:absolute;
+    background:green;
+    width:5px;
+    height:5px;
+    display:block;
+    border-radius:50%;
+    top:15px;
+    left:15px;
+  }
+
+}
+.degree{
+  /*90 + ( 360 * .1 )*/
+      background-image:
+        linear-gradient(90deg, transparent 50%, white 50%),
+        linear-gradient(90deg, white 50%, transparent 50%);
+}
+
