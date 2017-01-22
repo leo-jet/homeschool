@@ -1,46 +1,210 @@
 /**
  * 
  */  
-var wish_list = new Array();
+
+var ajaxRequest;  // The variable that makes Ajax possible!
+function ajaxFunction(){
+   try{
+      
+      // Opera 8.0+, Firefox, Safari
+      ajaxRequest = new XMLHttpRequest();
+   }catch (e){
+   
+      // Internet Explorer Browsers
+      try{
+         ajaxRequest = new ActiveXObject("Msxml2.XMLHTTP");
+      }catch (e) {
+      
+         try{
+            ajaxRequest = new ActiveXObject("Microsoft.XMLHTTP");
+         }catch (e){
+      
+            // Something went wrong
+            alert("Your browser broke!");
+            return false;
+         }
+      }
+   }
+}
+
 var URL = "";
+var wish_list = new Array();
 $(document).ready(function() {
+		
+	if(sessionStorage.listFiche==null){
+		sessionStorage.setItem('listFiche', "");
+	} else {
+		var list = sessionStorage.listFiche;
+	}
+	if(sessionStorage.typeExercice==null){
+		sessionStorage.setItem('typeExercice', "");
+	}
+	if(sessionStorage.niveauExercice==null){
+		sessionStorage.setItem('niveauExercice', "");
+	}
+	if(sessionStorage.chapitreExercice==null){
+		sessionStorage.setItem('chapitreExercice', "");
+	}
+	if(sessionStorage.sectionExercice==null){
+		sessionStorage.setItem('sectionExercice', "");
+	}
+	
     $("button").click(function(event) {
     	id_exo = $(this).attr("exo_id")
     	if(jQuery.inArray(id_exo,wish_list)==-1){
     		wish_list.push(id_exo);
     		$(this).attr('disabled', 'disabled');
-    		jQuery("#nombreExercice").text(wish_list.length);
+    		var list = sessionStorage.listFiche;
+    		if (list == ""){
+    			list = id_exo;
+    		} else { 
+    			if(list.search(id_exo)==-1){
+        			list = list + "," + id_exo;
+    			}
+    		}
+    		
+        	sessionStorage.setItem('listFiche', list);
+    		jQuery("#ficheExercice").text(list);
     	}
     });
-    $("#imprimer").click(function(event){ 
-    	$("#buttonImprimer").attr("href", "/terminals/imprimer/"+wish_list.toString());
+    
+    $("#type").change(function(event){
+    	//
+    	sessionStorage.setItem('typeExercice', $(this).val());
+    	$(this).prop("disabled", true);
+    	
+    	if($("#divNiveauExercice").attr("typeUser") != ''){
+    		$("#divNiveauExercice").prop("hidden",false);
+    		$("#divNiveauExercice").prop("disabled", true);
+    		sessionStorage.setItem('niveauExercice', $("#divNiveauExercice").attr("typeUser"));
+        	$(this).prop("disabled", true);
+        	$("#divChapitreExercice").prop("hidden",false);
+        	var donnee = {
+        			"niveau": $("#divNiveauExercice").attr("typeUser")
+        	}
+        	$.ajax({
+        		url: "/terminals/chapitreAjax",
+        		type: "GET",
+        		dataType: 'json', 
+        		data: donnee,
+        		success: function(result){
+        			for (var i in result){
+        				$("#chapitre").append("<option>"+result[i]+"</section>");
+        			}
+        		}
+        	});
+    	}
     });
     
-    JXG.Options.renderer = 'canvas';
-
-
-    var brd = JXG.JSXGraph.initBoard('box', {boundingbox:[-2,5,5,-2]});
-    var A  = brd.create('point', [0,0]),
-        B  = brd.create('point', [2,0]),
-        C  = brd.create('point', [1,2]),
-
-        a1 = brd.create('segment', [A,B], {name:'a_1', withLabel:true, label:{position:'top'} }),
-        a2 = brd.create('segment', [B,C], {name:'a_2', withLabel:true, label:{position:'top'} }),
-        a3 = brd.create('segment', [C,A], {name:'a_3', withLabel:true, label:{position:'top'} }),
-        c1 = brd.create('circle', 
-                [A, 
-                 function(){ var r1 = (C.Dist(A)-B.Dist(C)+A.Dist(B))/2.0;
-                            return r1; }
-                ]);
-        c2 = brd.create('circle', 
-                [B, 
-                 function(){ return A.Dist(B)-c1.Radius(); }
-                ]);
-        c3 = brd.create('circle', 
-                [C, 
-                 function(){ return B.Dist(C)-c2.Radius(); }
-                ]);
-        stream = brd.renderer.canvasRoot.toDataURL();
-        $("image").attr("src", stream)
-
+    $("#niveau").change(function(event){
+    	//
+    	sessionStorage.setItem('niveauExercice', $(this).val());
+    	$(this).prop("disabled", true);
+    	$("#divChapitreExercice").prop("hidden",false);
+    	var donnee = {
+    			"niveau": $("#niveau").val()
+    	}
+    	$.ajax({
+    		url: "/terminals/chapitreAjax",
+    		type: "GET",
+    		dataType: 'json', 
+    		data: donnee,
+    		success: function(result){
+    			for (var i in result){
+    				$("#chapitre").append("<option>"+result[i]+"</section>");
+    			}
+    		}
+    	});
+    });
+    
+    
+    $("#chapitre").change(function(event){
+    	//
+    	sessionStorage.setItem('chapitreExercice', $(this).val());
+    	$(this).prop("disabled", true);
+    	$("#divSectionExercice").prop("hidden",false);
+    	var donnee = {
+    			"chapitre": $("#chapitre").val()
+    	}
+    	$.ajax({
+    		url: "/terminals/sectionAjax",
+    		type: "GET",
+    		dataType: 'json', 
+    		data: donnee,
+    		success: function(result){
+    			for (var i in result){
+    				$("#sectionChapitre").append("<option>"+result[i]+"</section>");
+    			}
+    		}
+    	});
+    });
+    
+    $("#sectionChapitre").change(function(event){
+    	//
+    	sessionStorage.setItem('sectionExercice', $(this).val());
+    	var donnee = {
+    			"section": $("#sectionChapitre").val()
+    	}
+    	$.ajax({
+    		url: "/terminals/exercicesAjax",
+    		type: "GET",
+    		dataType: 'html', 
+    		data: donnee,
+    		success: function(result){
+    			$("#exercices").html(result);
+    			var exercice = document.getElementById(exercices);
+    			MathJax.Hub.Queue(["Typeset", MathJax.Hub, exercice]);
+    		}
+    	});
+    });
+    
+    
+    $("#buttonImprimer").click(function(event){ 
+    	var list = sessionStorage.listFiche;
+    	window.location = "/terminals/imprimer/"+list.toString();
+    	
+    	var donnee = {
+			"urlFiche": "/terminals/imprimer/"+list.toString(), 
+		}
+		$.ajax({
+			url: "/terminals/FicheImpressionAjax",
+			type: "GET",
+			dataType: 'html', 
+			data: donnee,
+			success: function(result){
+				alert("aler");
+			}
+		});
+    });
+    
+    
+    $("#reset").click(function(event){
+    	//on reinitialise les cookies
+    	sessionStorage.setItem('listFiche', "");
+    	sessionStorage.setItem('typeExercice', "");
+    	sessionStorage.setItem('niveauExercice', "");
+    	sessionStorage.setItem('chapitreExercice', "");
+    	sessionStorage.setItem('sectionExercice', "");
+    	
+    	
+    	$("#ficheExercice").text("");
+    });
+    
+    $("#btnChapExercice").click(function(event){
+    	$("#chapitre").prop("disabled", false);
+    	$("#divSectionExercice").prop("hidden",true);
+    });
+    
+    $("#btnTypeExercice").click(function(event){
+    	$("#chapitre").prop("disabled", false);
+    	$("#type").prop("disabled", false);
+    	$("#divSectionExercice").prop("hidden",true);
+    	$("#divChapitreExercice").prop("hidden",true);
+    	$("#type").val("0");
+    });
+    
+    
+    $('#example1').DataTable();
+    
 });
+

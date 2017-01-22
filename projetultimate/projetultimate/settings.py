@@ -40,7 +40,11 @@ INSTALLED_APPS = (
     'terminalS',
     'terminalSE',
     'djangobower',
+    'accounts',
+    'crispy_forms',
 )
+
+CRISPY_TEMPLATE_PACK = 'bootstrap3'
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
